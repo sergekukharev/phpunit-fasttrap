@@ -1,5 +1,5 @@
 {
-    "name": "sergekukharev/phpunit-speedtrap",
+    "name": "sergekukharev/phpunit-fasttrap",
     "description": "Find slow tests in your PHPUnit test suite",
     "keywords": ["PHPUnit", "fast", "profile"],
     "homepage": "https://github.com/sergekukharev/phpunit-speedtrap",

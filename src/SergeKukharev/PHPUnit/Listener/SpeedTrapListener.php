@@ -1,12 +1,12 @@
 <?php
 
-namespace JohnKary\PHPUnit\Listener;
+namespace SergeKukharev\PHPUnit\Listener;
 
 /**
- * A PHPUnit TestListener that exposes your slowest running tests by outputting
+ * A PHPUnit TestListener that exposes your fastest running tests by outputting
  * results directly to the console.
  */
-class SpeedTrapListener implements \PHPUnit_Framework_TestListener
+class FastTrapListener implements \PHPUnit_Framework_TestListener
 {
     /**
      * Internal tracking for test suites.
@@ -19,26 +19,26 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
     protected $suites = 0;
 
     /**
-     * Time in milliseconds at which a test will be considered "slow" and be
+     * Time in milliseconds at which a test will be considered "fast" and be
      * reported by this listener.
      *
      * @var int
      */
-    protected $slowThreshold;
+    protected $fastThreshold;
 
     /**
-     * Number of tests to report on for slowness.
+     * Number of tests to report on for fastness.
      *
      * @var int
      */
     protected $reportLength;
 
     /**
-     * Collection of slow tests.
+     * Collection of fast tests.
      *
      * @var array
      */
-    protected $slow = array();
+    protected $fast = array();
 
     /**
      * Construct a new instance.
@@ -126,10 +126,10 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
         if (!$test instanceof \PHPUnit_Framework_TestCase) return;
 
         $time = $this->toMilliseconds($time);
-        $threshold = $this->getSlowThreshold($test);
+        $threshold = $this->getFastThreshold($test);
 
-        if ($this->isSlow($time, $threshold)) {
-            $this->addSlowTest($test, $time);
+        if ($this->isFast($time, $threshold)) {
+            $this->addFastTest($test, $time);
         }
     }
 
@@ -152,8 +152,8 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
     {
         $this->suites--;
 
-        if (0 === $this->suites && $this->hasSlowTests()) {
-            arsort($this->slow); // Sort longest running tests to the top
+        if (0 === $this->suites && $this->hasFastTests()) {
+            arsort($this->fast); // Sort longest running tests to the top
 
             $this->renderHeader();
             $this->renderBody();
@@ -162,38 +162,38 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
     }
 
     /**
-     * Whether the given test execution time is considered slow.
+     * Whether the given test execution time is considered fast.
      *
      * @param int $time          Test execution time in milliseconds
-     * @param int $slowThreshold Test execution time at which a test should be considered slow (milliseconds)
+     * @param int $fastThreshold Test execution time at which a test should be considered fast (milliseconds)
      * @return bool
      */
-    protected function isSlow($time, $slowThreshold)
+    protected function isFast($time, $fastThreshold)
     {
-        return $time >= $slowThreshold;
+        return $time <= $fastThreshold;
     }
 
     /**
-     * Stores a test as slow.
+     * Stores a test as fast.
      *
      * @param \PHPUnit_Framework_TestCase $test
      * @param int                         $time Test execution time in milliseconds
      */
-    protected function addSlowTest(\PHPUnit_Framework_TestCase $test, $time)
+    protected function addFastTest(\PHPUnit_Framework_TestCase $test, $time)
     {
         $label = $this->makeLabel($test);
 
-        $this->slow[$label] = $time;
+        $this->fast[$label] = $time;
     }
 
     /**
-     * Whether at least one test has been considered slow.
+     * Whether at least one test has been considered fast.
      *
      * @return bool
      */
-    protected function hasSlowTests()
+    protected function hasFastTests()
     {
-        return !empty($this->slow);
+        return !empty($this->fast);
     }
 
     /**
@@ -219,24 +219,24 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
     }
 
     /**
-     * Calculate number of slow tests to report about.
+     * Calculate number of fast tests to report about.
      *
      * @return int
      */
     protected function getReportLength()
     {
-        return min(count($this->slow), $this->reportLength);
+        return min(count($this->fast), $this->reportLength);
     }
 
     /**
-     * Find how many slow tests occurred that won't be shown due to list length.
+     * Find how many fast tests occurred that won't be shown due to list length.
      *
-     * @return int Number of hidden slow tests
+     * @return int Number of hidden fast tests
      */
     protected function getHiddenCount()
     {
-        $total = count($this->slow);
-        $showing = $this->getReportLength($this->slow);
+        $total = count($this->fast);
+        $showing = $this->getReportLength();
 
         $hidden = 0;
         if ($total > $showing) {
@@ -247,35 +247,35 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
     }
 
     /**
-     * Renders slow test report header.
+     * Renders fast test report header.
      */
     protected function renderHeader()
     {
-        echo sprintf("\n\nYou should really fix these slow tests (>%sms)...\n", $this->slowThreshold);
+        echo sprintf("\n\nThese tests are fast enough: (<%sms)...\n", $this->fastThreshold);
     }
 
     /**
-     * Renders slow test report body.
+     * Renders fast test report body.
      */
     protected function renderBody()
     {
-        $slowTests = $this->slow;
+        $fastTests = $this->fast;
 
-        $length = $this->getReportLength($slowTests);
+        $length = $this->getReportLength();
         for ($i = 1; $i <= $length; ++$i) {
-            $label = key($slowTests);
-            $time = array_shift($slowTests);
+            $label = key($fastTests);
+            $time = array_shift($fastTests);
 
             echo sprintf(" %s. %sms to run %s\n", $i, $time, $label);
         }
     }
 
     /**
-     * Renders slow test report footer.
+     * Renders fast test report footer.
      */
     protected function renderFooter()
     {
-        if ($hidden = $this->getHiddenCount($this->slow)) {
+        if ($hidden = $this->getHiddenCount()) {
             echo sprintf("...and there %s %s more above your threshold hidden from view", $hidden == 1 ? 'is' : 'are', $hidden);
         }
     }
@@ -287,30 +287,30 @@ class SpeedTrapListener implements \PHPUnit_Framework_TestListener
      */
     protected function loadOptions(array $options)
     {
-        $this->slowThreshold = isset($options['slowThreshold']) ? $options['slowThreshold'] : 500;
+        $this->fastThreshold = isset($options['fastThreshold']) ? $options['fastThreshold'] : 500;
         $this->reportLength = isset($options['reportLength']) ? $options['reportLength'] : 10;
     }
 
     /**
-     * Get slow test threshold for given test. A TestCase can override the
-     * suite-wide slow threshold by using the annotation @slowThreshold with
+     * Get fast test threshold for given test. A TestCase can override the
+     * suite-wide fast threshold by using the annotation @fastThreshold with
      * the threshold value in milliseconds.
      *
-     * The following test will only be considered slow when its execution time
+     * The following test will only be considered fast when its execution time
      * reaches 5000ms (5 seconds):
      *
      * <code>
-     * \@slowThreshold 5000
+     * \@fastThreshold 5000
      * public function testLongRunningProcess() {}
      * </code>
      *
      * @param \PHPUnit_Framework_TestCase $test
      * @return int
      */
-    protected function getSlowThreshold(\PHPUnit_Framework_TestCase $test)
+    protected function getFastThreshold(\PHPUnit_Framework_TestCase $test)
     {
         $ann = $test->getAnnotations();
 
-        return isset($ann['method']['slowThreshold'][0]) ? $ann['method']['slowThreshold'][0] : $this->slowThreshold;
+        return isset($ann['method']['fastThreshold'][0]) ? $ann['method']['fastThreshold'][0] : $this->fastThreshold;
     }
 }

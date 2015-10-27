@@ -1,14 +1,18 @@
 {
-    "name": "johnkary/phpunit-speedtrap",
+    "name": "sergekukharev/phpunit-speedtrap",
     "description": "Find slow tests in your PHPUnit test suite",
-    "keywords": ["PHPUnit", "slow", "profile"],
-    "homepage": "https://github.com/johnkary/phpunit-speedtrap",
+    "keywords": ["PHPUnit", "fast", "profile"],
+    "homepage": "https://github.com/sergekukharev/phpunit-speedtrap",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
             "name": "John Kary",
             "email": "john@johnkary.net"
+        },
+        {
+            "name": "Serge Kukahrev",
+            "email": "serge.kukharev@gmail.com"
         }
     ],
     "require": {
@@ -19,7 +23,7 @@
     },
     "autoload": {
         "psr-0": {
-            "JohnKary": "src/"
+            "SergeKukharev": "src/"
         }
     },
     "extra": {

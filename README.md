@@ -41,7 +41,7 @@ These configuration parameters are set in `phpunit.xml` when adding the listener
     <!-- ... other suite configuration here ... -->
 
     <listeners>
-        <listener class="JohnKary\PHPUnit\Listener\FastTrapListener">
+        <listener class="SergeKukharev\PHPUnit\Listener\FastTrapListener">
             <arguments>
                 <array>
                     <element key="fastThreshold">
